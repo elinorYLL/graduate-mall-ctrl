@@ -7,3 +7,5 @@ export const BRANDS_RECOMMENT_PAGE_SIZE=6;
 export const SPU_RECOMMENT_PAGE_SIZE=6;
 
 export const USER_PAGE_SIZE=6;
+
+export const COMMENT_PAGE_SIZE=6;

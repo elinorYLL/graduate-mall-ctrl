@@ -124,6 +124,22 @@
   :before-close="handleClose">
   <!-- <span>这是一段信息</span> -->
      <el-form :model="skuFormAdd">
+
+    <el-form-item label="新增sku图">
+     <el-upload
+  class="upload-demo"
+  action="http://localhost:8089/spu/pic"
+  :on-preview="handlePreview"
+  :on-remove="handleRemoveAddSkuPicAllNew"
+  :on-success="AddSkuAllNewPicSuccess"
+  :file-list="skuAllNewAddList"
+  list-type="picture">
+  <el-button size="small" type="primary">点击上传</el-button>
+  <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+</el-upload>
+    </el-form-item>
+
+
      <el-form-item v-for="item,index in skuFormAdd.property" :label="item.name" :key="index">
           <el-radio-group v-model="pcIdAnother[index]">
            <el-radio v-for="pc,indexPc in item.propertyChoices" :label="pc.id" :key="indexPc">{{pc.name}}</el-radio>
@@ -135,9 +151,9 @@
     <el-form-item label="价格">
              <el-input v-model="skuFormAdd.price"></el-input>
     </el-form-item>
-     <el-form-item label="编码">
+     <!-- <el-form-item label="编码">
              <el-input v-model="skuFormAdd.code"></el-input>
-    </el-form-item>
+    </el-form-item> -->
     <el-form-item label="是否上架">
     <el-radio-group v-model="skuFormAdd.isSale">
       <el-radio label="1">是</el-radio>
@@ -171,7 +187,7 @@
       sortable
       width="180"
       column-key="date"
-      :filters="[{text: '2016-05-01', value: '2016-05-01'}, {text: '2016-05-02', value: '2016-05-02'}, {text: '2016-05-03', value: '2016-05-03'}, {text: '2016-05-04', value: '2016-05-04'}]"
+      :filters="filt"
       :filter-method="filterHandler"
     >
     </el-table-column>
@@ -313,14 +329,37 @@
   <el-table
     :data="skuData"
     style="width: 100%">
-    <el-table-column
+
+     <el-table-column
+      label="图片"
+      width="130">
+      <template slot-scope="scope">    
+        <!-- <el-input placeholder="请输入内容" v-show="scope.row.show" v-model="scope.row.code"></el-input>
+        <span style="margin-left: 10px" v-show="!scope.row.show">{{ scope.row.code }}</span> -->
+        <!-- 展示sku -->
+        <!-- ;handleRemoveSku(scope.$index, scope.row) -->
+  <el-upload
+  class="upload-demo"
+  action="http://localhost:8089/sku/pic"
+  :on-preview="handlePreview"
+  :on-remove="handleRemoveSkuPic"
+  :on-success="uploadSkuPicSuccess"
+  :file-list="scope.row.pictures"
+  list-type="picture">
+  <el-button size="small" type="primary" v-if="buttonShow">点击上传</el-button>
+  <div slot="tip" class="el-upload__tip" v-if="buttonShow">只能上传jpg/png文件，且不超过500kb</div>
+</el-upload>
+      </template>
+    </el-table-column>
+
+    <!-- <el-table-column
       label="编码"
       width="130">
       <template slot-scope="scope">    
         <el-input placeholder="请输入内容" v-show="scope.row.show" v-model="scope.row.code"></el-input>
         <span style="margin-left: 10px" v-show="!scope.row.show">{{ scope.row.code }}</span>
       </template>
-    </el-table-column>
+    </el-table-column> -->
     <el-table-column
       label="价格"
       width="100">
@@ -359,10 +398,10 @@
       <template slot-scope="scope">
         <el-button
           size="mini"
-          @click="handleEditSku(scope.$index, scope.row);scope.row.show=true">编辑</el-button>
+          @click="handleEditSku(scope.$index, scope.row);scope.row.show=true;buttonShow=true">编辑</el-button>
            <el-button
           size="mini"
-          @click="handleSaveSku(scope.$index, scope.row);scope.row.show=false">保存</el-button>
+          @click="handleSaveSku(scope.$index, scope.row);scope.row.show=false;buttonShow=false">保存</el-button>
         <el-button
           size="mini"
           type="danger"
@@ -388,7 +427,6 @@
   :before-close="handleCloseOuterAddSku">
   <!-- <span>这是一段信息</span> -->
   <!-- 外部新增sku -->
-
      <el-form :model="skuOuterFormAdd">
     <el-form-item v-for="item,index in skuOuterFormAdd.property" :label="item.name" :key="index">
           <el-radio-group v-model="pcId[index]">
@@ -401,14 +439,27 @@
     <el-form-item label="价格">
              <el-input v-model="skuOuterFormAdd.price"></el-input>
     </el-form-item>
-     <el-form-item label="编码">
+     <!-- <el-form-item label="编码">
              <el-input v-model="skuOuterFormAdd.code"></el-input>
-    </el-form-item>
+    </el-form-item> -->
     <el-form-item label="是否上架">
     <el-radio-group v-model="skuOuterFormAdd.isSale">
       <el-radio label="是"></el-radio>
       <el-radio label="否"></el-radio>
     </el-radio-group>
+    </el-form-item>
+        <el-form-item label="新增sku图">
+     <el-upload
+  class="upload-demo"
+  action="http://localhost:8089/spu/pic"
+  :on-preview="handlePreview"
+  :on-remove="handleRemoveAddSkuPic"
+  :on-success="AddSkuPicSuccess"
+  :file-list="skuNewAddList"
+  list-type="picture">
+  <el-button size="small" type="primary">点击上传</el-button>
+  <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+</el-upload>
     </el-form-item>
      </el-form>
 
@@ -429,12 +480,12 @@
       prop="tag"
       label="标签"
       width="100"
-      :filters="[{ text: '新品', value: '新品' }, { text: '热卖推荐', value: '热卖推荐' },{ text: '新品&热卖推荐', value: '新品&热卖推荐' },{ text: '其他', value: '其他' }]"
+      :filters="filt"
       :filter-method="filterTag"
       filter-placement="bottom-end">
       <template slot-scope="scope">
         <el-tag
-          :type="scope.row.tag === '新品' ? 'primary' : 'success'"
+          :type="scope.row.tag == '小米' ? 'primary' : 'success'"
           disable-transitions>{{scope.row.tag}}</el-tag>
       </template>
     </el-table-column>
@@ -478,6 +529,11 @@ export default {
     name:"product",
     data(){
         return{
+          buttonShow:false,
+          addSkuId:'',
+          skuNewAddList:[],
+          skuAllNewAddList:[],
+          idOfSpu:'',
           addBrandId:'',
           outerSkuAdd:[],
           pcId:[],
@@ -505,8 +561,8 @@ export default {
         labelPosition: 'right',
         formLabelAlign: {name: '',code: '',briefIntro: '',detailIntro:'',shopPrice:'',isNew:'',isRecom:'',saleTime:'',saleStatus:'',brands:'',region:''},
         formAdd:{name: '',code: '',briefIntro: '',detailIntro:'',shopPrice:'',isNew:'',isRecom:'',saleTime:'',saleStatus:'',brand:'',region:''},
-        skuFormAdd:{code:'',price:'',store:'',isSale:'',color:'',net:'',property:'',propertyChoice:''},
-        skuOuterFormAdd:{code:'',price:'',store:'',isSale:'',property:'',propertyChoice:''},
+        skuFormAdd:{price:'',store:'',isSale:'',color:'',net:'',property:'',propertyChoice:''},
+        skuOuterFormAdd:{price:'',store:'',isSale:'',property:'',propertyChoice:''},
         curPage:1,
         adOrder:0,
         adOrderS:0,
@@ -523,6 +579,9 @@ export default {
         AddAd:[],
         BannerPicEditList:[],
         AdPicEditList:[],
+        skuPicList:[],
+        picH:[],
+        filt:[],
         picList: [{name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}, {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}]
         }
         },
@@ -578,21 +637,38 @@ export default {
             this.yes='是'
          }
          else{
+
            this.yes='否';
          }
+         this.picH=JSON.parse(JSON.stringify(row.pictures));
+         console.log('我想要图')
+         console.log(this.picH)
          console.log(index, row);
       },
       handleSaveSku(index,row){
+          console.log(this.skuData);
+          // console.log(this.skuPicList);
         //这里的是没有解决....查看的修改那
           console.log("什么鬼拉");
           console.log(row);
           let isSale;
           let yes=this.yes;
+          let pics=[];
+          let picId=uuid();
+          let idOfSku=this.skuData[0].id;
+          console.log(idOfSku);
+          // row.pictures.forEach(function(item){
+          //   pics.push({id:item.id,url:item.url,isMaster:item.isMaster,pictureOrder:item.pictureOrder,pictureStatus:item.pictureStatus,spuId:item.spuId,skuId:item.skuId});
+          // })
+          // console.log('pics')
+          // console.log(pics)
           let propertyChoiceNames=[];
           let pcIdRes=[];
+          console.log(row.propertyChoices);
           row.propertyChoices.forEach(function(item){
-          propertyChoiceNames.push(item.name)
+          propertyChoiceNames.push(item.name)})
           var spc=[];
+          let pp=JSON.parse(JSON.stringify(this.picH));
           getPropertyChoiceIdByNames(propertyChoiceNames).then(res=>{
             if(res)
             {
@@ -618,6 +694,10 @@ export default {
           row.isSale=isSale;
          console.log("row");
           console.log(row);
+          pp[0]["spuId"]=row.spuId;
+          pp[0]["skuId"]=row.id;
+          console.log('我是图');
+          console.log(pp);
           var json={
             "sku":{
               "id":row.id,
@@ -628,7 +708,8 @@ export default {
               "delFlag":row.delFlag,
               "isSale":isSale
             },
-            "skuPropertyChoice":spc
+            "skuPropertyChoice":spc,
+            "pictures":pp
           }
           console.log('我发送的数据');
           console.log(json);
@@ -636,11 +717,12 @@ export default {
             if(res)
             {
               console.log(res);
+              return;
             }
           })
             }
           })
-          })     
+          // })     
       },
       handleAddOuterSku(index,row){
           console.log(index,row);
@@ -699,9 +781,14 @@ export default {
       handleCheck(index,row)
       {
         //查看sku
-        let spuId=row.id;
+           let spuId=row.id;
            getSkuById(spuId).then(res=>{
+            //  this.skuPicList.length=0;
+              this.idOfSpu=spuId;
+                console.log('luelueue')
+                console.log(this.idOfSpu);
               if(res){
+                  console.log(res);
                 res.data.skuList.forEach(element=>{
                   console.log(element);
                   element["show"]=false;
@@ -709,6 +796,7 @@ export default {
                 this.skuData=res.data.skuList;
                 console.log("sku");
                 console.log(this.skuData);
+                // console.log(this.skuData.pictures.length);
               }
            })
           console.log(index,row);
@@ -801,6 +889,48 @@ export default {
           } 
         }
       },
+      handleRemoveSkuPic(file){
+        console.log('移除前')
+        console.log(this.picH);
+         for(var i in this.picH){
+            for(var k in this.picH[i]){
+            if(this.picH[i][k]==file.uid)
+            {
+              // delete this.MainPicEditList[i];
+              //delect删除长度是不会变的 需要使用splice删除
+              this.picH.splice(i,1);
+              break;
+            }
+          } 
+        }
+        console.log(this.picH);
+      },
+      handleRemoveAddSkuPicAllNew(file,skuAllNewAddList){
+           for(var i in this.skuAllNewAddList){
+            for(var k in this.skuAllNewAddList[i]){
+            if(this.skuAllNewAddList[i][k]==file.uid)
+            {
+              // delete this.MainPicEditList[i];
+              //delect删除长度是不会变的 需要使用splice删除
+              this.skuAllNewAddList.splice(i,1);
+              break;
+            }
+          } 
+        }
+      },
+      handleRemoveAddSkuPic(file,skuNewAddList){
+           for(var i in this.skuNewAddList){
+            for(var k in this.skuNewAddList[i]){
+            if(this.skuNewAddList[i][k]==file.uid)
+            {
+              // delete this.MainPicEditList[i];
+              //delect删除长度是不会变的 需要使用splice删除
+              this.skuNewAddList.splice(i,1);
+              break;
+            }
+          } 
+        }
+      },
       handlePreview(file) {
         console.log(file);
         this.picUrl=file.url;
@@ -819,7 +949,7 @@ export default {
         });
       },
       getSpuPage(){
-         if(this.curPage>this.totalPage)
+     if(this.curPage>this.totalPage)
       {
         return;
       }
@@ -830,24 +960,34 @@ export default {
           console.log(res.data);
           this.totalPage=res.data.pages;
           this.total=res.data.total;
+          // let f=[]
            res.data.records.forEach(element=>{
+             console.log('在这呢');
             console.log(element);
-            element["tag"]="";
-            if(element.isNew=="1"&&element.isRecom!="1")
-            {
-              element["tag"]="新品";
-            }
-            if(element.isNew!="1"&&element.isRecom=="1")
-            {
-              element["tag"]="热卖推荐";
-            }
-            if(element.isRecom!="1"&&element.isNew!="1"){
-              element["tag"]="其他";
-            }
-            if(element.isNew=="1"&&element.isRecom=="1"){
-              element["tag"]="新品&热卖推荐"
-            }
+            element["tag"]=element.brands[0].name;
+          //   console.log(element.brands[0].name)
+          //   let json={
+          //     "text":element.brands[0].name,
+          //     "value":element.brands[0].name
+          //   }
+          //  f.push(json);
           })
+//           console.log('我是f')
+//           console.log(f);
+//          var result = [];
+//          var obj = {};
+//          for(var i =0; i<f.length; i++){
+//          if(!obj[f[i].text]){
+//          console.log('zj')
+//           console.log(f[i])
+//          result.push(f[i]);
+//          obj[f[i].text] = true;
+//        }
+//    }
+//           this.filt=JSON.parse(JSON.stringify(result));
+//            console.log(result)
+//             console.log("111");
+//             console.log(this.filt);
           this.tableData=res.data.records;
         }
       })
@@ -863,6 +1003,31 @@ export default {
            this.brands=res.data;
            console.log("我是brands");
            console.log(this.brands);
+           let f=[];
+             this.brands.forEach(element=>{
+            console.log(element);
+             element["tag"]=element.name;
+            console.log(element.name)
+            let json={
+              "text":element.name,
+              "value":element.name
+            }
+            f.push(json);
+          })
+          
+           var result = [];
+         var obj = {};
+         for(var i =0; i<f.length; i++){
+      if(!obj[f[i].text]){
+          console.log(f[i])
+         result.push(f[i]);
+         obj[f[i].text] = true;
+      }
+   }
+          console.log(result)
+          this.filt=JSON.parse(JSON.stringify(result));
+            console.log("111");
+            console.log(this.filt);
         }
       })
     },
@@ -946,7 +1111,8 @@ export default {
           "isMaster":"1",
           "pictureOrder":"0",
           "pictureStatus":"1",
-          "spuId":this.spu.id
+          "spuId":this.spu.id,
+           "skuId":"0"
       };
       this.MainPicEditList.push(files);
       console.log(this.MainPicEditList);
@@ -960,7 +1126,8 @@ export default {
           "isMaster":"0",
           "pictureOrder":"0",
           "pictureStatus":"01",
-          "spuId":this.spu.id
+          "spuId":this.spu.id,
+           "skuId":"0"
       };
       this.BannerPicEditList.push(files);
       console.log(this.BannerPicEditList);
@@ -975,13 +1142,28 @@ export default {
           "isMaster":"0",
           "pictureOrder":order,
           "pictureStatus":"02",
-          "spuId":this.spu.id
+          "spuId":this.spu.id,
+           "skuId":"0"
       };
       this.AdPicEditList.push(files);
       console.log(this.AdPicEditList);
     },
+    uploadSkuPicSuccess(response,file,fileList){
+      let id=uuid();
+      console.log(this.picH)
+      console.log('这里在上传')
+      let files={
+          "id":id,
+          "url":response.data,
+          "isMaster":"0",
+          "pictureOrder":"0",
+          "pictureStatus":"05"
+      };
+      this.picH.push(files);
+      console.log('我上传的sku图')
+      console.log(this.picH);
+    },
     AddMainSuccess(response,file,fileList){
-
       let id=uuid();
       let files={
           "id":id,
@@ -989,7 +1171,8 @@ export default {
           "isMaster":"1",
           "pictureOrder":"0",
           "pictureStatus":"1",
-          "spuId":this.getSpuId
+          "spuId":this.getSpuId,
+          "skuId":"0"
       };
       this.AddMain.push(files);
       console.log(this.AddMain);
@@ -1002,7 +1185,8 @@ export default {
           "isMaster":"0",
           "pictureOrder":"0",
           "pictureStatus":"01",
-          "spuId":this.getSpuId
+          "spuId":this.getSpuId,
+           "skuId":"0"
       };
       this.AddBanner.push(files);
       console.log(this.AddBanner);
@@ -1017,18 +1201,54 @@ export default {
           "isMaster":"0",
           "pictureOrder":order,
           "pictureStatus":"02",
-          "spuId":this.getSpuId
+          "spuId":this.getSpuId,
+          "skuId":"0"
       };
       this.AddAd.push(files);
       console.log(this.AddAd);
     },
+    AddSkuPicSuccess(response,file,fileList){
+      let id=uuid()
+      let files={
+          "id":id,
+          "url":response.data,
+          "isMaster":"0",
+          "pictureOrder":"0",
+          "pictureStatus":"05",
+          "spuId":this.getSpuId,
+           "skuId":this.addSkuId
+      };
+      this.skuNewAddList.push(files);
+      console.log(this.AddBanner);
+    },
+    AddSkuAllNewPicSuccess(response,file,fileList){
+        let id=uuid();
+         let spuId=this.getSpuId;
+      let files={
+          "id":id,
+          "url":response.data,
+          "isMaster":"0",
+          "pictureOrder":"0",
+          "pictureStatus":"05",
+          "spuId":spuId
+          //  "skuId":this.addSkuId
+      };
+      this.skuAllNewAddList.push(files);
+      console.log(this.skuAllNewAddList);
+    },
     submitSkuAdd(){
       //提交新增的sku
+      console.log(this.skuNewAddList);
       console.log('ssssssssssss');
       console.log(this.outerSkuAdd);
       console.log(this.skuOuterFormAdd);
       let spuId=this.outerSkuAdd.id;
       let skuId=uuid();
+      var arr=[];
+      let picId=uuid();
+      this.skuNewAddList.forEach(function(item){
+        arr.push({id:picId,url:item.url,isMaster:item.isMaster,pictureOrder:item.pictureOrder,pictureStatus:item.pictureStatus,spuId:spuId,skuId:skuId});
+      })
       let isSale;
       if(this.skuOuterFormAdd.isSale=="是"){
           isSale="1";
@@ -1050,14 +1270,13 @@ export default {
       var json={
         "sku":{
             "id":skuId,
-            "code":this.skuOuterFormAdd.code,
             "price":this.skuOuterFormAdd.price,
             "store":this.skuOuterFormAdd.store,
             "spuId":spuId,
-            "isSale":isSale,
             "delFlag":"0"
         },
-        "skuPropertyChoice":skuPropertyChoice
+        "skuPropertyChoice":skuPropertyChoice,
+        "pictures":arr
       }
       // console.log(this.skuOuterFormAdd);
       console.log(json);
@@ -1080,15 +1299,15 @@ export default {
       let picList=[];
        let Marr=[];
       this.AddMain.forEach(function(item){
-        Marr.push({id:item.id,url:item.url,isMaster:item.isMaster,pictureOrder:item.pictureOrder,pictureStatus:item.pictureStatus,spuId:item.spuId});
+        Marr.push({id:item.id,url:item.url,isMaster:item.isMaster,pictureOrder:item.pictureOrder,pictureStatus:item.pictureStatus,spuId:item.spuId,skuId:'0'});
       })
       let Barr=[];
        this.AddBanner.forEach(function(item){
-        Barr.push({id:item.id,url:item.url,isMaster:item.isMaster,pictureOrder:item.pictureOrder,pictureStatus:item.pictureStatus,spuId:item.spuId});
+        Barr.push({id:item.id,url:item.url,isMaster:item.isMaster,pictureOrder:item.pictureOrder,pictureStatus:item.pictureStatus,spuId:item.spuId,skuId:'0'});
       })
       let Aarr=[];
       this.AddAd.forEach(function(item){
-        Aarr.push({id:item.id,url:item.url,isMaster:item.isMaster,pictureOrder:item.pictureOrder,pictureStatus:item.pictureStatus,spuId:item.spuId});
+        Aarr.push({id:item.id,url:item.url,isMaster:item.isMaster,pictureOrder:item.pictureOrder,pictureStatus:item.pictureStatus,spuId:item.spuId,skuId:'0'});
       })
       // picList.push(Marr,Barr,Aarr);
       picList=[...Marr,...Barr,...Aarr];
@@ -1106,11 +1325,30 @@ export default {
           "classificationId":this.formAdd.region,
           "saleStatus":this.formAdd.saleStatus,
           "hotStatus":"0",
-          "id":id,
-          "saleTime":this.formAdd.saleTime
+          "id":id
+          // "saleTime":this.formAdd.saleTime,
+          // "createTime":this.formAdd.createTime
         },
         "picture":picList
       }
+      // "spu":{
+      //     "id":this.spu.id,
+      //     "code":this.formLabelAlign.code,
+      //     "name":this.formLabelAlign.name,
+      //     "briefIntro":this.formLabelAlign.briefIntro,
+      //     "detailIntro":this.formLabelAlign.detailIntro,
+      //     "shopPrice":this.formLabelAlign.shopPrice,
+      //     "brandId":this.brandId,
+      //     "classificationId":this.classificationId,
+      //     "saleStatus":this.saleStatusForm,
+      //     "isNew":this.isNew,
+      //     "isRecom":this.isRecom,
+      //     "hotStatus":this.spu.hotStatus,
+      //     "saleTime":this.formLabelAlign.saleTime,
+      //     "createTime":this.spu.createTime,
+      //     "delFlag":this.spu.delFlag
+      //    },
+      //    "picList":picList
       console.log(json);
       addProduct(json).then(res=>{
         if(res)
@@ -1135,49 +1373,17 @@ export default {
           })
     },
     SkuSure(){
-
-      // let spuId=this.outerSkuAdd.id;
-      // let skuId=uuid();
-      // let isSale;
-      // if(this.skuOuterFormAdd.isSale=="是"){
-      //     isSale="1";
-      // }else{
-      //   isSale="0";
-      // }
-      // let skuPropertyChoice=[];
-      // this.pcId.forEach(element=>{
-      //   let id=uuid();
-      //      let json={
-      //        "id":id,
-      //        "skuId":skuId,
-      //        "propertyChoiceId":element
-      //      }
-      //      skuPropertyChoice.push(json);
-      // })
-      // console.log('lll');
-      // console.log(skuPropertyChoice);
-      // var json={
-      //   "sku":{
-      //       "id":skuId,
-      //       "code":this.skuOuterFormAdd.code,
-      //       "price":this.skuOuterFormAdd.price,
-      //       "store":this.skuOuterFormAdd.store,
-      //       "spuId":spuId,
-      //       "isSale":isSale,
-      //       "delFlag":"0"
-      //   },
-      //   "skuPropertyChoice":skuPropertyChoice
-      // }
-      // // console.log(this.skuOuterFormAdd);
-      // console.log(json);
-      // addSku(json).then(res=>{
-      //   if(res){
-      //     console.log(res);
-      //   }
-      // })
-
         let spuId=this.getSpuId;
         let skuId=uuid();
+        this.addSkuId=skuId;
+        // this.skuAllNewAddList
+        console.log('yyywwww')
+        console.log(this.skuAllNewAddList);
+       var arr=[];
+      this.skuAllNewAddList.forEach(function(item){
+        arr.push({id:item.id,url:item.url,isMaster:item.isMaster,pictureOrder:item.pictureOrder,pictureStatus:item.pictureStatus,spuId:item.spuId,skuId:skuId});
+      })
+      console.log(arr);
         let skuPropertyChoice=[]; 
         this.pcIdAnother.forEach(element=>{
         let id=uuid();
@@ -1194,14 +1400,14 @@ export default {
          var json={
         "sku":{
             "id":skuId,
-            "code":this.skuFormAdd.code,
             "price":this.skuFormAdd.price,
             "store":this.skuFormAdd.store,
             "spuId":spuId,
             "isSale":this.skuFormAdd.isSale,
             "delFlag":"0"
         },
-        "skuPropertyChoice":skuPropertyChoice
+        "skuPropertyChoice":skuPropertyChoice,
+        "pictures":arr
       }
       console.log("json");
       console.log(json);
@@ -1227,25 +1433,32 @@ export default {
           console.log(res.data);
           this.totalPage=res.data.pages;
           this.total=res.data.total;
+          // let f=[];
            res.data.records.forEach(element=>{
             console.log(element);
-            element["tag"]="";
-            if(element.isNew=="1"&&element.isRecom!="1")
-            {
-              element["tag"]="新品";
-            }
-            if(element.isNew!="1"&&element.isRecom=="1")
-            {
-              element["tag"]="热卖推荐";
-            }
-            if(element.isRecom!="1"&&element.isNew!="1"){
-              element["tag"]="其他";
-            }
-            if(element.isNew=="1"&&element.isRecom=="1"){
-              element["tag"]="新品&热卖推荐"
-            }
+             element["tag"]=element.brands[0].name;
+            // console.log(element.brands[0].name)
+            // let json={
+            //   "text":element.brands[0].name,
+            //   "value":element.brands[0].name
+            // }
+            // f.push(json);
           })
           this.tableData=res.data.records;
+//             console.log(new Set(f));
+//            var result = [];
+//    var obj = {};
+//    for(var i =0; i<=f.length; i++){
+//       if(!obj[f[i].text]){
+//           console.log(f[i])
+//          result.push(f[i]);
+//          obj[f[i].text] = true;
+//       }
+//    }
+//           console.log(result)
+//           this.filt=JSON.parse(JSON.stringify(result));
+//             console.log("111");
+//             console.log(this.filt);
         }
       })
     },
@@ -1258,25 +1471,32 @@ export default {
           console.log(res.data);
           this.totalPage=res.data.pages;
           this.total=res.data.total;
+          // let f=[]
            res.data.records.forEach(element=>{
             console.log(element);
-            element["tag"]="";
-            if(element.isNew=="1"&&element.isRecom!="1")
-            {
-              element["tag"]="新品";
-            }
-            if(element.isNew!="1"&&element.isRecom=="1")
-            {
-              element["tag"]="热卖推荐";
-            }
-            if(element.isRecom!="1"&&element.isNew!="1"){
-              element["tag"]="其他";
-            }
-            if(element.isNew=="1"&&element.isRecom=="1"){
-              element["tag"]="新品&热卖推荐"
-            }
+             element["tag"]=element.brands[0].name;
+            // console.log(element.brands[0].name)
+            // let json={
+            //   "text":element.brands[0].name,
+            //   "value":element.brands[0].name
+            // }
+            // f.push(json);
+           
           })
           this.tableData=res.data.records;
+//    var result = [];
+//    var obj = {};
+//    for(var i =0; i<=f.length; i++){
+//       if(!obj[f[i].text]){
+//     console.log(f[i])
+//          result.push(f[i]);
+//          obj[f[i].text] = true;
+//       }
+//    }
+//  console.log(result)
+//           this.filt=JSON.parse(JSON.stringify(result));
+//             console.log("111");
+//             console.log(this.filt);
         }
       })
     }

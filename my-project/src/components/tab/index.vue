@@ -48,7 +48,7 @@
         <el-submenu index="3">
         <template slot="title">
           <i class="el-icon-location"></i>
-          <span>运营管理</span>
+          <span>销售管理</span>
         </template>
         <el-menu-item-group>
           <template slot="title"></template>
